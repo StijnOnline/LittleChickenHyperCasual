@@ -45,7 +45,7 @@ public class Crafting : MonoBehaviour, Interactable {
         yield return new WaitForSeconds(1);
 
         //spawn new item
-        Destroy(item1.gameObject); //TODO: Object Pooling
+        GameManager.itemPool.Return(item1.gameObject);
         item2.Change(item1.tier + 1);
         item2.gameObject.layer = LayerMask.NameToLayer("Item");
         item2.GetComponent<Collider2D>().enabled = true;

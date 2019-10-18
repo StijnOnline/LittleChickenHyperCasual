@@ -5,6 +5,8 @@ using UnityEngine;
 public class Enemy : MonoBehaviour, Interactable {
 
     public int tier = 1;
+    public float attackTimer = 10f;
+
 
     private void Start() {
         Change(tier);
@@ -12,8 +14,8 @@ public class Enemy : MonoBehaviour, Interactable {
 
     public void DropItem(Item i) {
         if(tier == i.tier) {
-            Destroy(i.gameObject); //TODO: Object Pool
-            Destroy(gameObject);
+            GameManager.itemPool.Return(i.gameObject);
+            GameManager.enemyPool.Return(gameObject);
         }
     }
 
@@ -23,5 +25,11 @@ public class Enemy : MonoBehaviour, Interactable {
         tier = newTier;
         GetComponentInChildren<TMPro.TextMeshPro>().SetText("" + tier);
         //set image
+    }
+
+    public IEnumerator startAttack() {
+        yield return new WaitForSeconds(attackTimer); 
+
+        //attack
     }
 }
