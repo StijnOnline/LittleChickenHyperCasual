@@ -8,6 +8,7 @@ public class Crafting : MonoBehaviour, Interactable {
 
     public Vector3 item1Pos;
     public Vector3 item2Pos;
+    public Vector3 craftedPos;
 
     public TMPro.TextMeshPro debugtext;
 
@@ -48,7 +49,7 @@ public class Crafting : MonoBehaviour, Interactable {
         item2.Change(item1.tier + 1);
         item2.gameObject.layer = LayerMask.NameToLayer("Item");
         item2.GetComponent<Collider2D>().enabled = true;
-        item2.transform.position = transform.position + new Vector3(0, 1.5f, 0);
+        item2.transform.position = transform.position + craftedPos + new Vector3(Random.Range(-0.2f,0.2f), Random.Range(-0.2f, 0.2f), Random.Range(-0.2f, 0.2f));
 
         item1 = null;
         item2 = null;

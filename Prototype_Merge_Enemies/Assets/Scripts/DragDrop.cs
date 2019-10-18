@@ -14,13 +14,13 @@ public class DragDrop : MonoBehaviour
 
             Vector3 touchedPos = Camera.main.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, 10));
             Ray touchRay = new Ray(Vector3.forward, touchedPos);
-            RaycastHit2D itemHit = Physics2D.Raycast(touchedPos, Vector2.zero, (LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
+            RaycastHit2D itemHit = Physics2D.Raycast(touchedPos, Vector2.zero, 10, ~(LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
             
             if(touch.phase == TouchPhase.Began) {
                 draggingObject = itemHit.transform.GetComponent<Item>();
 
-                int mask = ~(LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision"));
-                RaycastHit2D interatableHit = Physics2D.Raycast(touchedPos, Vector2.zero, );
+                
+                RaycastHit2D interatableHit = Physics2D.Raycast(touchedPos, Vector2.zero, 10, (LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
                 Interactable i = interatableHit.transform.GetComponent<Interactable>();
                 if (draggingObject != null && i != null)
                 {
@@ -30,7 +30,7 @@ public class DragDrop : MonoBehaviour
 
             if(touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled) {
                 //test where Item is dropped
-                RaycastHit2D interatableHit = Physics2D.Raycast(touchedPos, Vector2.zero, ~(LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
+                RaycastHit2D interatableHit = Physics2D.Raycast(touchedPos, Vector2.zero, 10,  (LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
                 Interactable i = interatableHit.transform.GetComponent<Interactable>();
                 if(draggingObject != null && i != null) {
                     i.DropItem(draggingObject);
