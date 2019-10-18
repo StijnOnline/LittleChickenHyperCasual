@@ -23,8 +23,8 @@ public class Enemy : MonoBehaviour, Interactable {
 
     public void Change(int newTier) {
         tier = newTier;
-        GetComponentInChildren<TMPro.TextMeshPro>().SetText("" + tier);
-        //set image
+        //GetComponentInChildren<TMPro.TextMeshPro>().SetText("" + tier);
+        GetComponentInChildren<SpriteRenderer>().sprite = GameManager.enemyData[newTier].enemySprite;
     }
 
     public IEnumerator startAttack() {
