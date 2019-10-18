@@ -12,6 +12,8 @@ public class Crafting : MonoBehaviour, Interactable {
     public TMPro.TextMeshPro debugtext;
 
     public void DropItem(Item i) { // when item is dropped on this
+        debugtext.text += "\nItem " + i + " dropped";
+
         if(item1 == null) { 
             item1 = i; 
             item1.transform.position = transform.position + item1Pos;
@@ -30,8 +32,13 @@ public class Crafting : MonoBehaviour, Interactable {
     }
 
     public IEnumerator CraftItem() {
-        //animate
+
         
+        item1.GetComponent<Collider2D>().enabled = false;
+        item2.GetComponent<Collider2D>().enabled = false;
+
+
+        //animate
         debugtext.text += "\nCrafted 2 Tier " + item1.tier + " items";
         
         yield return new WaitForSeconds(1);
@@ -40,9 +47,20 @@ public class Crafting : MonoBehaviour, Interactable {
         Destroy(item1.gameObject); //TODO: Object Pooling
         item2.Change(item1.tier + 1);
         item2.gameObject.layer = LayerMask.NameToLayer("Item");
+        item2.GetComponent<Collider2D>().enabled = true;
         item2.transform.position = transform.position + new Vector3(0, 1.5f, 0);
 
         item1 = null;
         item2 = null;
+    }
+
+    public void PickItem(Item i)
+    {
+        debugtext.text += "\nItem " + i + " picked up";
+
+        if (i == item1)
+        {
+            item1 = null;
+        }
     }
 }

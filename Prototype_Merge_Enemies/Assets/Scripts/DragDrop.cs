@@ -14,17 +14,25 @@ public class DragDrop : MonoBehaviour
 
             Vector3 touchedPos = Camera.main.ScreenToWorldPoint(new Vector3(touch.position.x, touch.position.y, 10));
             Ray touchRay = new Ray(Vector3.forward, touchedPos);
-            RaycastHit2D hit = Physics2D.Raycast(touchedPos, Vector2.zero, (LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
+            RaycastHit2D itemHit = Physics2D.Raycast(touchedPos, Vector2.zero, (LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
             
             if(touch.phase == TouchPhase.Began) {
-                draggingObject = hit.transform.GetComponent<Item>();                    
+                draggingObject = itemHit.transform.GetComponent<Item>();
+
+                int mask = ~(LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision"));
+                RaycastHit2D interatableHit = Physics2D.Raycast(touchedPos, Vector2.zero, );
+                Interactable i = interatableHit.transform.GetComponent<Interactable>();
+                if (draggingObject != null && i != null)
+                {
+                    i.PickItem(draggingObject);
+                }                                  
             }
 
-            if(touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled) { 
+            if(touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled) {
                 //test where Item is dropped
-                hit = Physics2D.Raycast(touchedPos, Vector2.zero, ~(LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
-                Interactable i = hit.transform.GetComponent<Interactable>();
-                if(i != null) {
+                RaycastHit2D interatableHit = Physics2D.Raycast(touchedPos, Vector2.zero, ~(LayerMask.NameToLayer("Item") | LayerMask.NameToLayer("Item_NoCollision")));
+                Interactable i = interatableHit.transform.GetComponent<Interactable>();
+                if(draggingObject != null && i != null) {
                     i.DropItem(draggingObject);
                 }
 
