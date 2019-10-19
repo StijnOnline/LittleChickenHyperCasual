@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72c924a7ce62d6f489f45324b12a5152, type: 3}
   m_Name: Tier 1
   m_EditorClassIdentifier: 
-  itemSprite: {fileID: -1768044199346558973, guid: bbf1cd5d878b4664690cd694077fb65a,
+  itemSprite: {fileID: 2312952093308680690, guid: d79ed8fc652ddda4ba8bfcf7f288f820,
     type: 3}

@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemySprite: {fileID: 2076983720127968420, guid: bbf1cd5d878b4664690cd694077fb65a,
     type: 3}
+  attackTimer: 22

@@ -12,6 +12,16 @@ public class GameManager : MonoBehaviour
     public static GameObjectPool enemyPool;
     public static EnemyData[] enemyData;
 
+    private Player player;
+
+    private System.Action EnemyAttackedAction;
+
+
+
+    //TODO: make better spawn system
+    private int[] spawnTiers = { 1,1,2,1,1,2,1,2,1,2,1,3};
+    private int counter = 0;
+
     void Start()
     {
         itemPool = new GameObjectPool(itemPrefab,"itemPool");
@@ -20,33 +30,53 @@ public class GameManager : MonoBehaviour
         itemData = Resources.LoadAll<ItemData>("Weapons");
         enemyData = Resources.LoadAll<EnemyData>("Enemies");
 
-        Debug.Log(itemData.Length);
-        Debug.Log(enemyData.Length);
-
+        player = FindObjectOfType<Player>();
+        EnemyAttackedAction += player.TakeDamage;
 
         //test
-        SpawnItem(1, new Vector3(0,0,0));
-        SpawnItem(1, new Vector3(-1, 0, 0));
-        SpawnItem(1, new Vector3(1, 0, 0));
+        SpawnItem(1, new Vector3(-1.5f,0,0));
+        SpawnItem(1, new Vector3(-0.5f, 0, 0));
+        SpawnItem(1, new Vector3(1.5f,0,0));
+        SpawnItem(1, new Vector3(0.5f, 0, 0));
 
-        SpawnEnemy(1, new Vector3(-1, 3, 0));
-        SpawnEnemy(2, new Vector3(1, 3, 0));
-
+        StartCoroutine(EnemySpawnLoop());
     }
 
-    public void SpawnItem(int tier, Vector3 pos) {
+
+    private IEnumerator EnemySpawnLoop() {
+        SpawnEnemy(spawnTiers[counter], new Vector3((counter % 3) - 1, 3, 0));
+        counter++;
+
+        yield return new WaitForSeconds(5f);
+        StartCoroutine(EnemySpawnLoop());
+    }
+
+    private void SpawnItem(int tier, Vector3 pos) {
         GameObject ob = itemPool.GetNext(); 
         ob.SetActive(true); 
         ob.transform.position = pos;
         ob.GetComponent<Item>().Change(tier);
     }
 
-    public void SpawnEnemy(int tier, Vector3 pos) {
-        GameObject ob = enemyPool.GetNext();
-        ob.SetActive(true);
+    private void SpawnEnemy(int tier, Vector3 pos) {
+        Enemy ob = enemyPool.GetNext().GetComponent<Enemy>();
+        ob.gameObject.SetActive(true);
         ob.transform.position = pos;
-        ob.GetComponent<Enemy>().Change(tier);
+        ob.Change(tier);
+        ob.Attacked += EnemyAttacked;
+        ob.Killed += EnemyKilled;
     }
 
+    private void EnemyAttacked(int tier) {
+        EnemyAttackedAction.Invoke();
+    }
 
+    private void EnemyKilled(int tier) {
+        for(int i = 0; i < tier; i++) {
+            SpawnItem(1, new Vector3(Random.Range(0f, 1f), Random.Range(0f, 1f), 0));
+        }
+        //float r = Random.Range(0f, 1f);
+        //if(r > 0.6f) { SpawnItem(2, new Vector3(0, 0, 0)); }
+        //else{ SpawnItem(1, new Vector3(0, 0, 0)); }
+    }
 }

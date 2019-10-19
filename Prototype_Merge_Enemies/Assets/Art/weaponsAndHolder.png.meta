@@ -17,6 +17,9 @@ TextureImporter:
   - first:
       213: -3780861741941173519
     second: weaponHolder
+  - first:
+      213: 2312952093308680690
+    second: weaponsAndHolder_0
   externalObjects: {}
   serializedVersion: 10
   mipmaps:
@@ -150,27 +153,6 @@ TextureImporter:
       bones: []
       spriteID: 93d4c93db3b19a346a3982cca31eb0eb
       internalID: -7961140354559332972
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: weaponsAndHolder_2
-      rect:
-        serializedVersion: 2
-        x: 223
-        y: 155
-        width: 4
-        height: 6
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: d92aaf08f3a4fe24ea3932685e5f5e52
-      internalID: 4411893279720022721
       vertices: []
       indices: 
       edges: []

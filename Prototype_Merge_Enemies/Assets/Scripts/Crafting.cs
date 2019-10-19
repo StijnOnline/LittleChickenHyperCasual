@@ -10,10 +10,7 @@ public class Crafting : MonoBehaviour, Interactable {
     public Vector3 item2Pos;
     public Vector3 craftedPos;
 
-    public TMPro.TextMeshPro debugtext;
-
     public void DropItem(Item i) { // when item is dropped on this
-        debugtext.text += "\nItem " + i + " dropped";
 
         if(item1 == null) { 
             item1 = i; 
@@ -40,7 +37,6 @@ public class Crafting : MonoBehaviour, Interactable {
 
 
         //animate
-        debugtext.text += "\nCrafted 2 Tier " + item1.tier + " items";
         
         yield return new WaitForSeconds(1);
 
@@ -57,8 +53,6 @@ public class Crafting : MonoBehaviour, Interactable {
 
     public void PickItem(Item i)
     {
-        debugtext.text += "\nItem " + i + " picked up";
-
         if (i == item1)
         {
             item1 = null;

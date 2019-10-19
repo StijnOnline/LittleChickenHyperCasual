@@ -11,7 +11,6 @@ public class Item : MonoBehaviour {
 
     public void Change(int newTier) {
         tier = newTier;
-        //GetComponentInChildren<TMPro.TextMeshPro>().SetText("" + tier);
-        GetComponentInChildren<SpriteRenderer>().sprite = GameManager.itemData[newTier].itemSprite;
+        GetComponentInChildren<SpriteRenderer>().sprite = GameManager.itemData[newTier-1].itemSprite;
     }
 }
