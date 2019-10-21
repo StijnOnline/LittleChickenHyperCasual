@@ -13,13 +13,18 @@ public class Enemy : MonoBehaviour, Interactable {
     public EnemyEvent Attacked;
     public EnemyEvent Killed;
 
+    [SerializeField] private GameObject poof;
+    [SerializeField] private GameObject slash;
+
     private void Start() {
         Change(tier);
         StartCoroutine(Attack());
+        poof.SetActive(true);
     }
 
     public void DropItem(Item i) {
         if(tier == i.tier) {
+            Destroy(GameObject.Instantiate(slash,transform.position,transform.rotation),2f);
             Killed(tier);
             GameManager.itemPool.Return(i.gameObject);
             GameManager.enemyPool.Return(gameObject);

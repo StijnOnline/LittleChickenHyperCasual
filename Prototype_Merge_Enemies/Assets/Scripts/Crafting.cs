@@ -10,6 +10,8 @@ public class Crafting : MonoBehaviour, Interactable {
     public Vector3 item2Pos;
     public Vector3 craftedPos;
 
+    public GameObject poof;
+
     public void DropItem(Item i) { // when item is dropped on this
 
         if(item1 == null) { 
@@ -37,7 +39,8 @@ public class Crafting : MonoBehaviour, Interactable {
 
 
         //animate
-        
+        Destroy(GameObject.Instantiate(poof, transform.position, transform.rotation), 2f);
+
         yield return new WaitForSeconds(1);
 
         //spawn new item

@@ -17,7 +17,6 @@ public class GameManager : MonoBehaviour
     private System.Action EnemyAttackedAction;
 
 
-
     //TODO: make better spawn system
     private int[] spawnTiers = { 1,1,2,1,1,2,1,2,1,2,1,3};
     private int counter = 0;
@@ -47,7 +46,7 @@ public class GameManager : MonoBehaviour
         SpawnEnemy(spawnTiers[counter], new Vector3((counter % 3) - 1, 3, 0));
         counter++;
 
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(8f);
         StartCoroutine(EnemySpawnLoop());
     }
 
