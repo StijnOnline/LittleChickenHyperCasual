@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
-{
+public class GameManager : MonoBehaviour {
+    [Header("Game Settings")]
     [SerializeField] private float dist = 0f;
     [SerializeField] private float targetDist = 0.2f;
     [SerializeField] private float targetWidth = 0.18f;
-    [SerializeField] private float speed = 0.25f;
-    [SerializeField] private float bonusSpeed = 0.01f;
+    [SerializeField] private float startSpeed = 0.35f;
+    private float speed = 0;
     private int score = 0;
+    private int highScore = 0;
     private float lastPos = -0.1f;
+    [SerializeField] private AnimationCurve speedCurve;
 
+    [Header("Important References")]
     [SerializeField] private GameObject dominoPrefab;
     private Transform currentDomino;
     [SerializeField] private Transform target;
@@ -19,9 +22,12 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private TMPro.TextMeshProUGUI text;
     [SerializeField] private TMPro.TextMeshProUGUI scoreText;
+    [SerializeField] private TMPro.TextMeshProUGUI highScoreText;
 
     public static GameObjectPool dominoPool;
     List<GameObject> dominoes = new List<GameObject>();
+
+
 
     private enum GameState {Begin, Playing, Ended };
     private GameState gameState = GameState.Begin;
@@ -33,14 +39,21 @@ public class GameManager : MonoBehaviour
         target = GameObject.Instantiate(target);
         currentDomino =  dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
+
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+        highScoreText.SetText(""+highScore);
+
+        speed = startSpeed;
     }
 
     public void Update() {
         if(gameState == GameState.Begin && (Input.touchCount > 0 || Input.GetMouseButtonDown(0))) { gameState = GameState.Playing; }
 
         if(gameState == GameState.Playing) {
-            dist += Time.deltaTime * (speed + score * bonusSpeed);
-            cam.position = new Vector3(dist - 1, cam.position.y, cam.position.z);
+            speed = startSpeed + speedCurve.Evaluate(score);
+
+            dist += Time.deltaTime * speed;
+            cam.position = new Vector3(dist - 1, 0.6f, -1f);
             currentDomino.position = new Vector3(dist, 0.1f, 0);
 
             bool touched = Input.touchCount > 0;
@@ -86,15 +99,20 @@ public class GameManager : MonoBehaviour
     
     public IEnumerator EndGame() {
         gameState = GameState.Ended;
+        if(score > highScore) {
+            highScore = score;
+            PlayerPrefs.SetInt("HighScore", highScore);
+            highScoreText.SetText("" + highScore);
+        }
 
         foreach(GameObject obj in dominoes) {
             obj.GetComponent<Rigidbody>().isKinematic = false;
         }
 
-        Vector3 targetPos = new Vector3(0, dist/2f , dist/2f);
+        Vector3 targetPos = new Vector3(-1, Mathf.Max(dist / 2f, 0.6f), Mathf.Min( -dist/2f,-1f));
 
-        while(cam.position.x > 0) {
-            cam.position = cam.position - new Vector3(0.04f, 0, 0);
+        while((cam.position - targetPos).magnitude > 0.05f) {
+            cam.position = Vector3.Lerp(cam.position, targetPos, 0.05f);
             yield return 0;
         }
 
@@ -103,15 +121,8 @@ public class GameManager : MonoBehaviour
         Debug.Log("first",dominoes[0]);
         dominoes[0].GetComponent<Rigidbody>().AddForce(Vector3.right * 100f);
 
-        yield return new WaitForSeconds(0.6f);
-
-        while(cam.position.x < dist - 1) {
-            cam.position = cam.position + new Vector3(0.02f,0,0);
-            yield return 0;
-        }
-
-        yield return new WaitForSeconds(2f);
-
+        yield return new WaitForSeconds(0.3f * dist / targetDist + 1f);
+                
         ResetGame();
     }
 
@@ -126,9 +137,10 @@ public class GameManager : MonoBehaviour
         dist = 0f;
         score = 0;
         lastPos = -0.1f;
+        speed = startSpeed;
         scoreText.SetText("" + score);
 
-        cam.position = new Vector3(dist - 1, cam.position.y, cam.position.z);
+        cam.position = new Vector3(dist - 1, 0.6f, -1f);
 
         currentDomino = dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
