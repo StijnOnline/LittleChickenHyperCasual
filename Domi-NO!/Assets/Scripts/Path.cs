@@ -10,11 +10,26 @@ public class Path : MonoBehaviour
 
     void Start()
     {
-        
+        length = 0;
+        nodes.Clear();
+
+        foreach(Transform child in GetComponentsInChildren<Transform>()) {
+            if(child != transform) {
+                nodes.Add(child);
+            }
+        }
+
+        for(int i = 0; i < nodes.Count; i++) {
+            if(i > 0) {
+                Vector3 toNext = (nodes[i].position - nodes[i - 1].position);
+                length += toNext.magnitude;
+            }
+        }
     }
 
     void OnDrawGizmos()
     {
+        Gizmos.color = Color.red;
         length = 0;
         nodes.Clear();
 
@@ -53,5 +68,9 @@ public class Path : MonoBehaviour
         }
         Debug.LogError("Error Evaluating path");
         return Vector3.zero;
+    }
+
+    public List<Transform> GetPath() {
+        return nodes;
     }
 }

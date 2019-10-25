@@ -8,11 +8,17 @@ public class GameObjectPool {
 
     [SerializeField] private GameObject objectPrefab;
 
-    public GameObjectPool(GameObject _objectPrefab, string _name) {
+    /// <summary>
+    /// Creates a GameObjectPool. When root is not set, it will be created.
+    /// </summary>  
+    public GameObjectPool(GameObject _objectPrefab, string _name, Transform _root = null) {
         objectPrefab = _objectPrefab;
 
-        root = new GameObject().transform;
-        root.name = _name;
+        if(_root == null) {
+            root = new GameObject().transform;
+            root.name = _name;
+        } else { root = _root; }
+
         pool = new List<GameObject>();
 
         for(int i = 0; i < 20; i++) {
