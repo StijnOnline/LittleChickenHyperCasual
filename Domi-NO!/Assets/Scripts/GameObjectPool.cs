@@ -10,7 +10,7 @@ public class GameObjectPool {
 
     /// <summary>
     /// Creates a GameObjectPool. When root is not set, it will be created.
-    /// </summary>  
+    /// </summary> 
     public GameObjectPool(GameObject _objectPrefab, string _name, Transform _root = null) {
         objectPrefab = _objectPrefab;
 
