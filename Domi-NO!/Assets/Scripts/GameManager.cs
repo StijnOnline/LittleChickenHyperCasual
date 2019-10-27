@@ -196,7 +196,7 @@ public class GameManager : MonoBehaviour {
             Vector3 ToNext = nodes[i - 1].position - nodes[i].position;
 
 
-            float d = 0;
+            float d = cornerTargetDist;
             while(d < ToNext.magnitude - minMaxDist.y - cornerTargetDist) {
                 float gap = Random.Range(minMaxDist.x + minWidth / 2, minMaxDist.y - minWidth / 2);
                 float width = Mathf.Max(gap - minMaxDist.x / 2, minMaxDist.y / 2 - gap);
@@ -264,8 +264,10 @@ public class GameManager : MonoBehaviour {
             obj.GetComponent<Rigidbody>().isKinematic = false;
         }
 
-        Vector3 targetPos = path.transform.position + camOffset * 5f;
+        HitCheck hitCheck = dominoes[dominoes.Count - 1].AddComponent<HitCheck>();
+        hitCheck.requiredTag = "Domino";
 
+        Vector3 targetPos = path.transform.position + camOffset * 5f;
         Camera camScript = cam.GetComponent<Camera>();
 
         while((cam.position - targetPos).magnitude > 0.05f) {
@@ -273,13 +275,15 @@ public class GameManager : MonoBehaviour {
             camScript.orthographicSize = Mathf.Lerp(camScript.orthographicSize, camZoom, 0.05f);
             yield return 0;
         }
-
-        yield return new WaitForSeconds(1);
-
         dominoes[0].GetComponent<Rigidbody>().AddForce(dominoes[0].transform.forward * 100f);
 
-        //TODO: onLastHit test
-        yield return new WaitForSeconds(0.3f * dist / minMaxDist.y + 1f);
+        if(dominoes.Count > 2) {
+            while(!hitCheck.IsHit()) {
+                yield return 0;
+            }
+        }
+        Destroy(hitCheck);
+        yield return new WaitForSeconds(1f);
 
         ResetGame();
     }
@@ -294,7 +298,7 @@ public class GameManager : MonoBehaviour {
 
         currentDomino = dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
-        currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
+        
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.color;
         c.a = DOMINO_TRANSPARANCY;
@@ -313,6 +317,7 @@ public class GameManager : MonoBehaviour {
         speed = startSpeed;
         scoreText.SetText("" + score);
 
+        currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
         cam.position = path.Evaluate(dist) + camOffset;        
         camScript.orthographicSize = 1;
 

@@ -887,12 +887,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minMaxDist: {x: 0.2, y: 0.5}
-  minWidth: 0.2
+  minWidth: 0.1
   startSpeed: 0.4
   cornerTargetWidth: 0.2
   cornerTargetDist: 0.1
   camOffset: {x: -2, y: 2, z: -2}
-  camZoom: 5
+  camZoom: 6
   path: {fileID: 85642163}
   dominoPrefab: {fileID: 515565545730855728, guid: 65bfd557d5bf47340a0c5c843a4fa319,
     type: 3}
@@ -1004,7 +1004,7 @@ Light:
   serializedVersion: 9
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 1
+  m_Intensity: 0.2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
