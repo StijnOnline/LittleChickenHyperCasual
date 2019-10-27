@@ -19,7 +19,7 @@ public class ImageLoader : MonoBehaviour {
                     GameObject go = dominoPool.GetNext();
                     go.transform.localPosition = new Vector3(i - image.width / 2f,0, j - image.height / 2f);
                     Material mat = go.GetComponent<Renderer>().material;
-                    mat.color = pixel;
+                    mat.SetColor("_BaseColor", pixel);
                 }
 
             }

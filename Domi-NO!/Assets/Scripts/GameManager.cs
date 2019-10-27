@@ -9,8 +9,8 @@ public class GameManager : MonoBehaviour {
     private const float TARGET_SCALE_Y = 0.5f;
     private const float TARGET_PERFECT_RANGE = 0.15f;
     private const float DOMINO_UNSET_HEIGTH = 0.7f;
-    private const float DOMINO_SET_HEIGTH = 0.5f;
-    private const float DOMINO_TRANSPARANCY = 0.5f;
+    private const float DOMINO_SET_HEIGTH = 0.55f;
+    private const float DOMINO_TRANSPARANCY = 0.7f;
     private const float MINIMUM_PLACE_DIST = 0.1f;
 
     private float dist = 0f;
@@ -42,6 +42,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private float cornerTargetWidth = 0.2f;
     [SerializeField] private float cornerTargetDist = 0.2f;
     [SerializeField] private Vector3 camOffset;   
+    [SerializeField] private float camZoom;   
 
     [Header("Important References")]
     [SerializeField] private Path path;
@@ -61,21 +62,24 @@ public class GameManager : MonoBehaviour {
         dominoPool = new GameObjectPool(dominoPrefab, "dominoPool");
         targetPool = new GameObjectPool(targetPrefab, "targetPool");
 
+        SetTargets();
+
+        dist = targets[0].dist;
+        cam.position = path.Evaluate(dist) + camOffset;
+
+
         currentDomino = dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
+        currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.color;
         c.a = DOMINO_TRANSPARANCY;
-        mat.color = c;
+        mat.SetColor("_BaseColor", c);
 
         //highScore = PlayerPrefs.GetInt("HighScore", 0);
         //highScoreText.SetText(""+highScore);
 
-        speed = startSpeed;
-
-        SetTargets();
-
-        dist = targets[0].dist;
+        speed = startSpeed;        
     }
 
     public void Update() {
@@ -114,7 +118,7 @@ public class GameManager : MonoBehaviour {
 
 
 
-        if(gameState == GameState.Begin && (Input.touchCount > 0 || Input.GetMouseButtonDown(0))) { gameState = GameState.Playing; }
+        if(gameState == GameState.Begin && input!= TouchInput.None) { gameState = GameState.Playing; }
 
         if(gameState == GameState.Playing) {
             //    speed = startSpeed + speedCurve.Evaluate(score);
@@ -127,7 +131,6 @@ public class GameManager : MonoBehaviour {
                     text.SetText("Too Early!");
                     StartCoroutine(EndGame());
                 } else {
-                    //TODO: Check piece
                     if(targets[0].direction == input) {
 
                         if(Mathf.Abs(dist - targets[0].dist) < TARGET_PERFECT_RANGE) {
@@ -144,10 +147,11 @@ public class GameManager : MonoBehaviour {
                 }
 
                 
-                Quaternion rotation = Quaternion.identity;
-                if(input == TouchInput.Both) { rotation *= Quaternion.Euler(0, -45, 0); } //TODO: calculate rotation
-                else if(input == TouchInput.Left) { rotation *= Quaternion.Euler(0, 90, 0); }
-                PlaceDomino(rotation);
+                Vector3 rotation = Vector3.zero;
+                if(input == TouchInput.Both) {
+                    rotation = targets[0].transform.rotation.eulerAngles;
+                } else if(input == TouchInput.Right) { rotation += new Vector3(0, 90, 0); }
+                PlaceDomino(Quaternion.Euler( rotation));
 
             } 
             else if(dist > targets[0].dist + targets[0].width / 2) {
@@ -168,7 +172,7 @@ public class GameManager : MonoBehaviour {
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.color;
         c.a = 1f;
-        mat.color = c;
+        mat.SetColor("_BaseColor", c);
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_SET_HEIGTH, 0);
         currentDomino.rotation = rotation;
 
@@ -177,7 +181,7 @@ public class GameManager : MonoBehaviour {
         mat = currentDomino.GetComponent<Renderer>().material;
         c = mat.color;
         c.a = 0.5f;
-        mat.color = c;
+        mat.SetColor("_BaseColor",c);
         dominoes.Add(currentDomino.gameObject);
         NextTarget();
         //    score += 1;
@@ -190,7 +194,7 @@ public class GameManager : MonoBehaviour {
         float traveled = 0;
         for(int i = 1; i < nodes.Count; i++) {
             Vector3 ToNext = nodes[i - 1].position - nodes[i].position;
-            
+
 
             float d = 0;
             while(d < ToNext.magnitude - minMaxDist.y - cornerTargetDist) {
@@ -206,13 +210,13 @@ public class GameManager : MonoBehaviour {
                 } else {
                     targets[targets.Count - 1].direction = TouchInput.Left;
                 }
-                if(i > 3) { targets[targets.Count - 1].gameObject.SetActive(false); }
+                if(i > 4) { targets[targets.Count - 1].gameObject.SetActive(false); }
 
-                
+
 
                 targets[targets.Count - 1].dist = traveled + d + gap;
                 targets[targets.Count - 1].width = width;
-                
+
                 d += gap + width / 2;
 
             }
@@ -220,14 +224,22 @@ public class GameManager : MonoBehaviour {
 
             targets.Add(targetPool.GetNext().GetComponent<Target>());
             targets[targets.Count - 1].transform.position = nodes[i].position + new Vector3(0, TARGET_HEIGHT, 0);
-            targets[targets.Count - 1].transform.rotation = Quaternion.Euler(0, 45, 0); //TODO calculate direction
+            Vector3 rotation = Vector3.zero;
+            if(i < nodes.Count - 1) {                
+                Vector3 dir = nodes[i - 1].position - nodes[i + 1].position;
+                rotation += new Vector3(0, -45, 0);
+                if((dir.x < 0 ^ dir.z > 0)) {
+                    rotation += new Vector3(0, 90, 0);
+                }
+            }
+            targets[targets.Count - 1].transform.rotation = Quaternion.Euler(rotation); //TODO calculate direction
             targets[targets.Count - 1].transform.localScale = new Vector3(TARGET_SCALE_X, TARGET_SCALE_Y, cornerTargetWidth);
             targets[targets.Count - 1].dist = traveled;
             targets[targets.Count - 1].width = cornerTargetWidth;
             targets[targets.Count - 1].direction = TouchInput.Both;
 
 
-            if(i > 3) { targets[targets.Count - 1].gameObject.SetActive(false); }            
+            if(i > 4) { targets[targets.Count - 1].gameObject.SetActive(false); }            
         }
         
     }
@@ -252,20 +264,19 @@ public class GameManager : MonoBehaviour {
             obj.GetComponent<Rigidbody>().isKinematic = false;
         }
 
-        Vector3 targetPos = path.transform.position + camOffset;
-        float targetZoom = 5f;
+        Vector3 targetPos = path.transform.position + camOffset * 5f;
 
         Camera camScript = cam.GetComponent<Camera>();
 
         while((cam.position - targetPos).magnitude > 0.05f) {
             cam.position = Vector3.Lerp(cam.position, targetPos, 0.05f);
-            camScript.orthographicSize = Mathf.Lerp(camScript.orthographicSize, targetZoom,0.05f);
+            camScript.orthographicSize = Mathf.Lerp(camScript.orthographicSize, camZoom, 0.05f);
             yield return 0;
         }
 
         yield return new WaitForSeconds(1);
 
-        dominoes[0].GetComponent<Rigidbody>().AddForce(Vector3.right * 100f);
+        dominoes[0].GetComponent<Rigidbody>().AddForce(dominoes[0].transform.forward * 100f);
 
         //TODO: onLastHit test
         yield return new WaitForSeconds(0.3f * dist / minMaxDist.y + 1f);
@@ -287,7 +298,7 @@ public class GameManager : MonoBehaviour {
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.color;
         c.a = DOMINO_TRANSPARANCY;
-        mat.color = c;
+        mat.SetColor("_BaseColor",c);
 
         foreach(Target t in targets) {
             dominoPool.Return(t.gameObject);
