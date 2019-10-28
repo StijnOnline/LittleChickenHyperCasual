@@ -1,17 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour {
 
-    private const float TARGET_HEIGHT = 0.26f;
+    private const float INPUT_LENGTH_VALUE = 0.1f;
+
+    private const float TARGET_HEIGHT = 0.27f;
     private const float TARGET_SCALE_X = 0.5f;
     private const float TARGET_SCALE_Y = 0.5f;
-    private const float TARGET_PERFECT_RANGE = 0.15f;
+    private const float TARGET_PERFECT_RANGE = 0.03f;
     private const float DOMINO_UNSET_HEIGTH = 0.7f;
     private const float DOMINO_SET_HEIGTH = 0.55f;
     private const float DOMINO_TRANSPARANCY = 0.7f;
     private const float MINIMUM_PLACE_DIST = 0.1f;
+    private const float FAKE_SHADOW_HEIGTH = 0.26f;
 
     private float dist = 0f;
     private float speed = 0;
@@ -27,7 +31,7 @@ public class GameManager : MonoBehaviour {
     private GameObjectPool dominoPool;
     private GameObjectPool targetPool;
     List<GameObject> dominoes = new List<GameObject>();
-    List<Target> targets = new List<Target>();    
+    List<Target> targets = new List<Target>();
 
     public enum TouchInput { None, Left, Right, Both };
     private TouchInput input;
@@ -35,32 +39,36 @@ public class GameManager : MonoBehaviour {
     private GameState gameState = GameState.Begin;
 
     [Header("Game Settings")]
-    
+
     [SerializeField] private Vector2 minMaxDist = new Vector2(0.1f, 0.5f);
     [SerializeField] private float minWidth = 0.1f;
     [SerializeField] private float startSpeed = 0.35f;
+    [SerializeField] private float speedIncreasePerScore = 0.005f;
     [SerializeField] private float cornerTargetWidth = 0.2f;
     [SerializeField] private float cornerTargetDist = 0.2f;
-    [SerializeField] private Vector3 camOffset;   
-    [SerializeField] private float camZoom;   
+    [SerializeField] private Vector3 camOffset;
+    [SerializeField] private float camZoom;
 
     [Header("Important References")]
     [SerializeField] private Path path;
-    [SerializeField] private GameObject dominoPrefab;    
+    [SerializeField] private ImageLoader image;
+    [SerializeField] private GameObject dominoPrefab;
     [SerializeField] private GameObject targetPrefab;
-    [SerializeField] private Transform cam;   
+    [SerializeField] private GameObject fakeShadow;
+    [SerializeField] private Transform cam;
 
     [SerializeField] private TMPro.TextMeshProUGUI text;
     [SerializeField] private TMPro.TextMeshProUGUI scoreText;
     [SerializeField] private TMPro.TextMeshProUGUI highScoreText;
 
-    
+
 
     void Start() {
         camScript = cam.GetComponent<Camera>();
 
         dominoPool = new GameObjectPool(dominoPrefab, "dominoPool");
         targetPool = new GameObjectPool(targetPrefab, "targetPool");
+        fakeShadow = GameObject.Instantiate(fakeShadow);
 
         SetTargets();
 
@@ -71,6 +79,8 @@ public class GameManager : MonoBehaviour {
         currentDomino = dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
+        fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
+
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.color;
         c.a = DOMINO_TRANSPARANCY;
@@ -79,7 +89,7 @@ public class GameManager : MonoBehaviour {
         //highScore = PlayerPrefs.GetInt("HighScore", 0);
         //highScoreText.SetText(""+highScore);
 
-        speed = startSpeed;        
+        speed = startSpeed;
     }
 
     public void Update() {
@@ -89,16 +99,17 @@ public class GameManager : MonoBehaviour {
             for(int i = 0; i < Input.touchCount; i++) {
                 if(Input.GetTouch(i).phase == TouchPhase.Began) {
                     if(Input.GetTouch(i).position.x < Screen.width / 2f) {
-                        lastLeftTouch = 0.06f;
+                        lastLeftTouch = INPUT_LENGTH_VALUE;
                     } else {
-                        lastRightTouch = 0.06f;
+                        lastRightTouch = INPUT_LENGTH_VALUE;
                     }
                 }
             }
         }
-
-        if(Input.GetMouseButtonDown(0)) { lastLeftTouch = 0.06f; }
-        if(Input.GetMouseButtonDown(1)) { lastRightTouch = 0.06f; }
+        if(SystemInfo.deviceType == DeviceType.Desktop) {
+            if(Input.GetMouseButtonDown(0)) { lastLeftTouch = INPUT_LENGTH_VALUE; }
+            if(Input.GetMouseButtonDown(1)) { lastRightTouch = INPUT_LENGTH_VALUE; }
+        }
 
         input = TouchInput.None;
         if(lastLeftTouch > 0 && lastLeftTouch < 0.04) {
@@ -113,21 +124,31 @@ public class GameManager : MonoBehaviour {
             else
                 input = TouchInput.Right;
         }
+
         lastLeftTouch = Mathf.Max(lastLeftTouch - Time.deltaTime, 0);
         lastRightTouch = Mathf.Max(lastRightTouch - Time.deltaTime, 0);
 
-
-
-        if(gameState == GameState.Begin && input!= TouchInput.None) { gameState = GameState.Playing; }
+        if(gameState == GameState.Begin && input != TouchInput.None) { gameState = GameState.Playing; }
 
         if(gameState == GameState.Playing) {
-            //    speed = startSpeed + speedCurve.Evaluate(score);
-
-            currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0); 
+            speed = startSpeed + score * speedIncreasePerScore;
+            dist += Time.deltaTime * speed;
+            if(dist < path.getLength()) {
+                cam.position = path.Evaluate(dist) + camOffset;
+            } else {
+                gameState = GameState.Ended;
+                StartCoroutine(EndGame(true));
+            }
+        }
+        if(gameState == GameState.Playing) {
+            currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
+            currentDomino.rotation = targets[0].transform.rotation;
+            fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
+            fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90,0,0);
 
             if(input != TouchInput.None && (dist > lastPos + MINIMUM_PLACE_DIST)) {
                 if(dist < targets[0].dist - targets[0].width / 2) {
-                    Debug.Log("Too late at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
+                    Debug.Log("Too Early at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
                     text.SetText("Too Early!");
                     StartCoroutine(EndGame());
                 } else {
@@ -139,50 +160,44 @@ public class GameManager : MonoBehaviour {
                             text.SetText("Nice!");
                         }
                     } else {
-                        Debug.Log("Too late at " + dist + " With " + input + ". Target: " + targets[0].dist + ", Width " + targets[0].width + ", Dir " + targets[0].direction, targets[0]);
+                        Debug.Log("Wrong at " + dist + " With " + input + ". Target: " + targets[0].dist + ", Width " + targets[0].width + ", Dir " + targets[0].direction, targets[0]);
                         text.SetText("Wrong!");
                         StartCoroutine(EndGame());
                     }
 
                 }
+                PlaceDomino(input);
 
-                
-                Vector3 rotation = Vector3.zero;
-                if(input == TouchInput.Both) {
-                    rotation = targets[0].transform.rotation.eulerAngles;
-                } else if(input == TouchInput.Right) { rotation += new Vector3(0, 90, 0); }
-                PlaceDomino(Quaternion.Euler( rotation));
-
-            } 
-            else if(dist > targets[0].dist + targets[0].width / 2) {
-                Debug.Log("Too late at "+ dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width,targets[0]);
+            } else if(dist > targets[0].dist + targets[0].width / 2) {
+                Debug.Log("Too late at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
                 text.SetText("Too late!");
                 StartCoroutine(EndGame());
-            }
-
-            dist += Time.deltaTime * speed;
-            if(path.getLength() > dist) { cam.position = path.Evaluate(dist) + camOffset; } else {
-                //TODO: end of path
             }
         }
     }
 
-    public void PlaceDomino(Quaternion rotation) {
+    public void PlaceDomino(TouchInput input) {
+        Vector3 rotation = Vector3.zero;
+        if(input == TouchInput.Both) {
+            rotation = targets[0].transform.rotation.eulerAngles;
+        } else if(input == TouchInput.Right) { rotation += new Vector3(0, 90, 0); }
 
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.color;
-        c.a = 1f;
+        c.a = 0.9f;
         mat.SetColor("_BaseColor", c);
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_SET_HEIGTH, 0);
-        currentDomino.rotation = rotation;
+        currentDomino.rotation = Quaternion.Euler(rotation);
+        if(input == TouchInput.Both) { currentDomino.position = currentDomino.position + currentDomino.right * 0.1f; }
 
         lastPos = dist;
         currentDomino = dominoPool.GetNext().transform;
         mat = currentDomino.GetComponent<Renderer>().material;
         c = mat.color;
         c.a = 0.5f;
-        mat.SetColor("_BaseColor",c);
+        mat.SetColor("_BaseColor", c);
         dominoes.Add(currentDomino.gameObject);
+
         NextTarget();
         //    score += 1;
         //    scoreText.SetText("" + score);
@@ -224,13 +239,14 @@ public class GameManager : MonoBehaviour {
 
             targets.Add(targetPool.GetNext().GetComponent<Target>());
             targets[targets.Count - 1].transform.position = nodes[i].position + new Vector3(0, TARGET_HEIGHT, 0);
-            Vector3 rotation = Vector3.zero;
-            if(i < nodes.Count - 1) {                
-                Vector3 dir = nodes[i - 1].position - nodes[i + 1].position;
-                rotation += new Vector3(0, -45, 0);
-                if((dir.x < 0 ^ dir.z > 0)) {
-                    rotation += new Vector3(0, 90, 0);
-                }
+            Vector3 rotation = new Vector3(0, -45, 0);
+            if(i < nodes.Count - 1) {
+                Vector3 pos1 = nodes[i - 1].position;
+                Vector3 pos2 = nodes[i].position;
+                Vector3 dir = pos1 - nodes[i + 1].position;
+
+                if((dir.x < 0 ^ dir.z > 0)) { rotation += new Vector3(0, 90, 0); }
+                if((dir.x < 0 ^ (pos2 - pos1).x == 0)) { rotation += new Vector3(0, 180, 0); }
             }
             targets[targets.Count - 1].transform.rotation = Quaternion.Euler(rotation); //TODO calculate direction
             targets[targets.Count - 1].transform.localScale = new Vector3(TARGET_SCALE_X, TARGET_SCALE_Y, cornerTargetWidth);
@@ -239,20 +255,20 @@ public class GameManager : MonoBehaviour {
             targets[targets.Count - 1].direction = TouchInput.Both;
 
 
-            if(i > 4) { targets[targets.Count - 1].gameObject.SetActive(false); }            
+            if(i > 4) { targets[targets.Count - 1].gameObject.SetActive(false); }
         }
-        
+
     }
 
     public void NextTarget() {
         targets[0].gameObject.SetActive(false);
         targetPool.Return(targets[0].gameObject);
         targets.RemoveAt(0);
-
-        targets[Mathf.Min(targets.Count - 1, 6)].gameObject.SetActive(true);
+        if(targets.Count > 1)
+            targets[Mathf.Min(targets.Count - 1, 6)].gameObject.SetActive(true);
     }
 
-    public IEnumerator EndGame() {
+    public IEnumerator EndGame(bool win = false) {
         gameState = GameState.Ended;
         if(score > highScore) {
             highScore = score;
@@ -285,7 +301,12 @@ public class GameManager : MonoBehaviour {
         Destroy(hitCheck);
         yield return new WaitForSeconds(1f);
 
-        ResetGame();
+        if(win) {
+            yield return new WaitForSeconds(image.Reveal() + 5f);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        } else {
+            ResetGame();
+        }
     }
 
     private void ResetGame() {
@@ -298,11 +319,11 @@ public class GameManager : MonoBehaviour {
 
         currentDomino = dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
-        
+
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.color;
         c.a = DOMINO_TRANSPARANCY;
-        mat.SetColor("_BaseColor",c);
+        mat.SetColor("_BaseColor", c);
 
         foreach(Target t in targets) {
             dominoPool.Return(t.gameObject);
@@ -318,7 +339,7 @@ public class GameManager : MonoBehaviour {
         scoreText.SetText("" + score);
 
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
-        cam.position = path.Evaluate(dist) + camOffset;        
+        cam.position = path.Evaluate(dist) + camOffset;
         camScript.orthographicSize = 1;
 
         gameState = GameState.Begin;

@@ -20,9 +20,23 @@ public class ImageLoader : MonoBehaviour {
                     go.transform.localPosition = new Vector3(i - image.width / 2f,0, j - image.height / 2f);
                     Material mat = go.GetComponent<Renderer>().material;
                     mat.SetColor("_BaseColor", pixel);
+
+                    go.SetActive(false);
                 }
 
             }
+        }
+    }
+
+    public float Reveal() {
+        StartCoroutine(RevealDelayed());
+        return 0.1f * transform.childCount;
+    }
+
+    private IEnumerator RevealDelayed() {
+        for(int i = 0; i < transform.childCount; i++) {
+            transform.GetChild(i).gameObject.SetActive(true);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 }
