@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ImageLoader : MonoBehaviour {
+    public bool revealOnStart = false;
+
     [SerializeField] private Texture2D image;
 
     public static GameObjectPool dominoPool;
@@ -26,6 +28,7 @@ public class ImageLoader : MonoBehaviour {
 
             }
         }
+        if(revealOnStart) { Reveal(); }
     }
 
     public float Reveal() {
@@ -36,7 +39,7 @@ public class ImageLoader : MonoBehaviour {
     private IEnumerator RevealDelayed() {
         for(int i = 0; i < transform.childCount; i++) {
             transform.GetChild(i).gameObject.SetActive(true);
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(3f / (image.width * image.height));
         }
     }
 }

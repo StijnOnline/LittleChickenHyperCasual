@@ -60,8 +60,14 @@ public class GameManager : MonoBehaviour {
 
     [SerializeField] private TMPro.TextMeshProUGUI text;
     [SerializeField] private Slider progressBar;
+    [SerializeField] private Image leftTouch;
+    [SerializeField] private Image RightTouch;
 
+    private HitCheck hitCheck;
 
+    //TODO: UI button
+    //TODO: Audio
+    //TODO: BUGS
 
     void Start() {
         camScript = cam.GetComponent<Camera>();
@@ -80,7 +86,10 @@ public class GameManager : MonoBehaviour {
         currentDomino = dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
+        currentDomino.rotation = targets[0].transform.rotation;
+
         fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
+        fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90, 0, 0);
 
         Material mat = currentDomino.GetComponent<Renderer>().material;
         Color c = mat.GetColor("_BaseColor");
@@ -149,7 +158,14 @@ public class GameManager : MonoBehaviour {
             fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
             fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90, 0, 0);
 
+            Color target = new Color(1, 1, 1, 0.5f);
+            if(input == TouchInput.Left || input == TouchInput.Both) { leftTouch.color = new Color(1, 1, 1, 0.8f); }            
+            if(input == TouchInput.Right || input == TouchInput.Both) { RightTouch.color = new Color(1, 1, 1, 0.8f); }
+            leftTouch.color = Color.Lerp(leftTouch.color, target, 0.1f);
+            RightTouch.color = Color.Lerp(RightTouch.color, target, 0.1f);
+
             if(input != TouchInput.None && (dist > lastPos + MINIMUM_PLACE_DIST)) {
+
                 if(dist < targets[0].dist - targets[0].width / 2) {
                     Debug.Log("Too Early at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
                     text.SetText("Too Early!");
@@ -290,7 +306,7 @@ public class GameManager : MonoBehaviour {
             obj.GetComponent<Rigidbody>().isKinematic = false;
         }
 
-        HitCheck hitCheck = dominoes[dominoes.Count - 1].AddComponent<HitCheck>();
+        hitCheck = dominoes[dominoes.Count - 1].AddComponent<HitCheck>();
         hitCheck.requiredTag = "Domino";
 
         Vector3 targetPos = path.transform.position + camOffset * 5f;
@@ -304,7 +320,7 @@ public class GameManager : MonoBehaviour {
         dominoes[0].GetComponent<Rigidbody>().AddForce(dominoes[0].transform.forward * 100f);
 
         if(dominoes.Count > 2) {
-            while(!hitCheck.IsHit()) {
+            while(!hitCheck.isHit) {
                 yield return 0;
             }
         }
@@ -317,6 +333,11 @@ public class GameManager : MonoBehaviour {
         } else {
             ResetGame();
         }
+    }
+
+    public void ForceReset() {
+        hitCheck.isHit = true;
+        Invoke("ResetGame",1f);
     }
 
     private void ResetGame() {
