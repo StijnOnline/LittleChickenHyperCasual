@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
 
@@ -13,14 +14,13 @@ public class GameManager : MonoBehaviour {
     private const float TARGET_PERFECT_RANGE = 0.03f;
     private const float DOMINO_UNSET_HEIGTH = 0.7f;
     private const float DOMINO_SET_HEIGTH = 0.55f;
-    private const float DOMINO_TRANSPARANCY = 0.7f;
+    private const float DOMINO_TRANSPARANCY = 1f;
     private const float MINIMUM_PLACE_DIST = 0.1f;
     private const float FAKE_SHADOW_HEIGTH = 0.26f;
 
     private float dist = 0f;
     private float speed = 0;
-    private int score = 0;
-    private int highScore = 0;
+    private int levelLength = 0;
     private float lastPos = -0.1f;
     private float lastLeftTouch;
     private float lastRightTouch;
@@ -58,8 +58,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private Transform cam;
 
     [SerializeField] private TMPro.TextMeshProUGUI text;
-    [SerializeField] private TMPro.TextMeshProUGUI scoreText;
-    [SerializeField] private TMPro.TextMeshProUGUI highScoreText;
+    [SerializeField] private Slider progressBar;
 
 
 
@@ -71,8 +70,10 @@ public class GameManager : MonoBehaviour {
         fakeShadow = GameObject.Instantiate(fakeShadow);
 
         SetTargets();
+        levelLength = targets.Count;
 
         dist = targets[0].dist;
+        Debug.Log(dist);
         cam.position = path.Evaluate(dist) + camOffset;
 
 
@@ -131,7 +132,7 @@ public class GameManager : MonoBehaviour {
         if(gameState == GameState.Begin && input != TouchInput.None) { gameState = GameState.Playing; }
 
         if(gameState == GameState.Playing) {
-            speed = startSpeed + score * speedIncreasePerScore;
+            //speed = startSpeed + score * speedIncreasePerScore;
             dist += Time.deltaTime * speed;
             if(dist < path.getLength()) {
                 cam.position = path.Evaluate(dist) + camOffset;
@@ -141,10 +142,14 @@ public class GameManager : MonoBehaviour {
             }
         }
         if(gameState == GameState.Playing) {
+            progressBar.value = (levelLength - targets.Count) / (float)levelLength;
+            
+
+
             currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
             currentDomino.rotation = targets[0].transform.rotation;
             fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
-            fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90,0,0);
+            fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90, 0, 0);
 
             if(input != TouchInput.None && (dist > lastPos + MINIMUM_PLACE_DIST)) {
                 if(dist < targets[0].dist - targets[0].width / 2) {
@@ -182,21 +187,21 @@ public class GameManager : MonoBehaviour {
             rotation = targets[0].transform.rotation.eulerAngles;
         } else if(input == TouchInput.Right) { rotation += new Vector3(0, 90, 0); }
 
-        Material mat = currentDomino.GetComponent<Renderer>().material;
-        Color c = mat.color;
-        c.a = 0.9f;
-        mat.SetColor("_BaseColor", c);
+        
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_SET_HEIGTH, 0);
         currentDomino.rotation = Quaternion.Euler(rotation);
-        if(input == TouchInput.Both) { currentDomino.position = currentDomino.position + currentDomino.right * 0.1f; }
+        if(input == TouchInput.Both) { currentDomino.position = currentDomino.position + currentDomino.right * 0.2f; }
 
         lastPos = dist;
         currentDomino = dominoPool.GetNext().transform;
-        mat = currentDomino.GetComponent<Renderer>().material;
-        c = mat.color;
-        c.a = 0.5f;
-        mat.SetColor("_BaseColor", c);
         dominoes.Add(currentDomino.gameObject);
+
+        for(int i = 0; i < dominoes.Count; i++) {
+            Material mat = dominoes[i].GetComponent<Renderer>().material;
+            Color c = mat.color;
+            c.a = Mathf.Max(0.3f, Mathf.Min(1f, 0.2f * (dominoes.Count - i)));
+            mat.SetColor("_BaseColor", c);
+        }        
 
         NextTarget();
         //    score += 1;
@@ -213,7 +218,7 @@ public class GameManager : MonoBehaviour {
 
             float d = cornerTargetDist;
             while(d < ToNext.magnitude - minMaxDist.y - cornerTargetDist) {
-                float gap = Random.Range(minMaxDist.x + minWidth / 2, minMaxDist.y - minWidth / 2);
+                float gap = Random.Range(minMaxDist.x, minMaxDist.y);
                 float width = Mathf.Max(gap - minMaxDist.x / 2, minMaxDist.y / 2 - gap);
 
                 targets.Add(targetPool.GetNext().GetComponent<Target>());
@@ -225,7 +230,7 @@ public class GameManager : MonoBehaviour {
                 } else {
                     targets[targets.Count - 1].direction = TouchInput.Left;
                 }
-                if(i > 4) { targets[targets.Count - 1].gameObject.SetActive(false); }
+                targets[targets.Count - 1].gameObject.SetActive(false);
 
 
 
@@ -255,9 +260,9 @@ public class GameManager : MonoBehaviour {
             targets[targets.Count - 1].direction = TouchInput.Both;
 
 
-            if(i > 4) { targets[targets.Count - 1].gameObject.SetActive(false); }
+            targets[targets.Count - 1].gameObject.SetActive(false);
         }
-
+        targets[0].gameObject.SetActive(true);
     }
 
     public void NextTarget() {
@@ -265,16 +270,16 @@ public class GameManager : MonoBehaviour {
         targetPool.Return(targets[0].gameObject);
         targets.RemoveAt(0);
         if(targets.Count > 1)
-            targets[Mathf.Min(targets.Count - 1, 6)].gameObject.SetActive(true);
+            targets[0].gameObject.SetActive(true);
     }
 
     public IEnumerator EndGame(bool win = false) {
         gameState = GameState.Ended;
-        if(score > highScore) {
-            highScore = score;
-            PlayerPrefs.SetInt("HighScore", highScore);
-            highScoreText.SetText("" + highScore);
-        }
+        //if(score > highScore) {
+        //    highScore = score;
+        //    PlayerPrefs.SetInt("HighScore", highScore);
+        //    highScoreText.SetText("" + highScore);
+        //}
 
         foreach(GameObject obj in dominoes) {
             obj.GetComponent<Rigidbody>().isKinematic = false;
@@ -329,14 +334,15 @@ public class GameManager : MonoBehaviour {
             dominoPool.Return(t.gameObject);
         }
         targets.Clear();
-        SetTargets();
+        SetTargets(); 
+        levelLength = targets.Count;
 
 
         dist = targets[0].dist;
-        score = 0;
+        //score = 0;
         lastPos = -0.1f;
         speed = startSpeed;
-        scoreText.SetText("" + score);
+        //scoreText.SetText("" + score);
 
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
         cam.position = path.Evaluate(dist) + camOffset;
