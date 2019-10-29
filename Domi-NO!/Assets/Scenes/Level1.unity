@@ -1122,10 +1122,10 @@ MonoBehaviour:
     type: 3}
   fakeShadow: {fileID: 4259272071370787512, guid: d4739019664da0c4eb7e4c0cb8fb83bf,
     type: 3}
+  perfectParticlesPrefab: {fileID: 0}
   cam: {fileID: 963194228}
   text: {fileID: 1731808160}
-  scoreText: {fileID: 2071379237}
-  highScoreText: {fileID: 633099257}
+  progressBar: {fileID: 0}
 --- !u!4 &658209659
 Transform:
   m_ObjectHideFlags: 0
