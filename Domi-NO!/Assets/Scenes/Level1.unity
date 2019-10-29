@@ -820,6 +820,8 @@ MonoBehaviour:
     type: 3}
   fakeShadow: {fileID: 4259272071370787512, guid: d4739019664da0c4eb7e4c0cb8fb83bf,
     type: 3}
+  perfectParticlesPrefab: {fileID: 157283894702091671, guid: 5453c44b70b7ed8498419c3f7c49adcc,
+    type: 3}
   cam: {fileID: 963194228}
   text: {fileID: 1731808160}
   progressBar: {fileID: 1704335433}

@@ -55,6 +55,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private GameObject dominoPrefab;
     [SerializeField] private GameObject targetPrefab;
     [SerializeField] private GameObject fakeShadow;
+    [SerializeField] private GameObject perfectParticlesPrefab;
     [SerializeField] private Transform cam;
 
     [SerializeField] private TMPro.TextMeshProUGUI text;
@@ -161,6 +162,7 @@ public class GameManager : MonoBehaviour {
 
                         if(Mathf.Abs(dist - targets[0].dist) < TARGET_PERFECT_RANGE) {
                             text.SetText("Perfect!");
+                            Destroy(GameObject.Instantiate(perfectParticlesPrefab, path.Evaluate(dist),targets[0].transform.rotation * Quaternion.Euler(-90,0,0)),1f);
                         } else {
                             text.SetText("Nice!");
                         }
