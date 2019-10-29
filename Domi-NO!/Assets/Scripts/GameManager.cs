@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour {
     private const float TARGET_PERFECT_RANGE = 0.03f;
     private const float DOMINO_UNSET_HEIGTH = 0.7f;
     private const float DOMINO_SET_HEIGTH = 0.55f;
-    private const float DOMINO_TRANSPARANCY = 1f;
+    private const float DOMINO_TRANSPARANCY = 0.3f;
     private const float MINIMUM_PLACE_DIST = 0.1f;
     private const float FAKE_SHADOW_HEIGTH = 0.26f;
 
@@ -74,7 +74,6 @@ public class GameManager : MonoBehaviour {
         levelLength = targets.Count;
 
         dist = targets[0].dist;
-        Debug.Log(dist);
         cam.position = path.Evaluate(dist) + camOffset;
 
 
@@ -84,7 +83,7 @@ public class GameManager : MonoBehaviour {
         fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
 
         Material mat = currentDomino.GetComponent<Renderer>().material;
-        Color c = mat.color;
+        Color c = mat.GetColor("_BaseColor");
         c.a = DOMINO_TRANSPARANCY;
         mat.SetColor("_BaseColor", c);
 
@@ -144,8 +143,6 @@ public class GameManager : MonoBehaviour {
         }
         if(gameState == GameState.Playing) {
             progressBar.value = (levelLength - targets.Count) / (float)levelLength;
-            
-
 
             currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
             currentDomino.rotation = targets[0].transform.rotation;
@@ -180,6 +177,13 @@ public class GameManager : MonoBehaviour {
                 text.SetText("Too late!");
                 StartCoroutine(EndGame());
             }
+
+            for(int i = Mathf.Max(0, dominoes.Count - 12); i < dominoes.Count; i++) {
+                Material mat = dominoes[i].GetComponent<Renderer>().material;
+                Color c = mat.GetColor("_BaseColor");
+                c.a = Mathf.Min(1, c.a+  0.1f * Time.deltaTime);
+                mat.SetColor("_BaseColor", c);
+            }
         }
     }
 
@@ -198,12 +202,11 @@ public class GameManager : MonoBehaviour {
         currentDomino = dominoPool.GetNext().transform;
         dominoes.Add(currentDomino.gameObject);
 
-        for(int i = 0; i < dominoes.Count; i++) {
-            Material mat = dominoes[i].GetComponent<Renderer>().material;
-            Color c = mat.color;
-            c.a = Mathf.Max(0.3f, Mathf.Min(1f, 0.2f * (dominoes.Count - i)));
-            mat.SetColor("_BaseColor", c);
-        }        
+        Material mat = currentDomino.GetComponent<Renderer>().material;
+        Color c = mat.GetColor("_BaseColor");
+        c.a = DOMINO_TRANSPARANCY;
+        mat.SetColor("_BaseColor", c);
+        
 
         NextTarget();
         //    score += 1;
@@ -328,7 +331,7 @@ public class GameManager : MonoBehaviour {
         dominoes.Add(currentDomino.gameObject);
 
         Material mat = currentDomino.GetComponent<Renderer>().material;
-        Color c = mat.color;
+        Color c = mat.GetColor("_BaseColor");
         c.a = DOMINO_TRANSPARANCY;
         mat.SetColor("_BaseColor", c);
 
