@@ -161,10 +161,13 @@ public class GameManager : MonoBehaviour {
         if(gameState == GameState.Playing) {
             progressBar.value = (levelLength - targets.Count) / (float)levelLength;
 
-            currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
+            
             currentDomino.rotation = targets[0].transform.rotation;
-            fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
+            currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
+            if(targets[0].direction == TouchInput.Both) { currentDomino.position += currentDomino.right * 0.2f; }
             fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90, 0, 0);
+            fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
+            if(targets[0].direction == TouchInput.Both) { fakeShadow.transform.position += fakeShadow.transform.right * 0.2f; }
 
             Color target = new Color(1, 1, 1, 0.5f);
             if(input == TouchInput.Left || input == TouchInput.Both) { leftTouch.color = new Color(1, 1, 1, 0.8f); }
@@ -273,7 +276,7 @@ public class GameManager : MonoBehaviour {
             traveled += ToNext.magnitude;
 
             targets.Add(targetPool.GetNext().GetComponent<Target>());
-            targets[targets.Count - 1].transform.position = nodes[i].position + new Vector3(0, TARGET_HEIGHT, 0);
+            
             Vector3 rotation = new Vector3(0, -45, 0);
             if(i < nodes.Count - 1) {
                 Vector3 pos1 = nodes[i - 1].position;
@@ -283,7 +286,8 @@ public class GameManager : MonoBehaviour {
                 if((dir.x < 0 ^ dir.z > 0)) { rotation += new Vector3(0, 90, 0); }
                 if((dir.x < 0 ^ (pos2 - pos1).x == 0)) { rotation += new Vector3(0, 180, 0); }
             }
-            targets[targets.Count - 1].transform.rotation = Quaternion.Euler(rotation); //TODO calculate direction
+            targets[targets.Count - 1].transform.rotation = Quaternion.Euler(rotation);
+            targets[targets.Count - 1].transform.position = nodes[i].position + targets[targets.Count - 1].transform.right * 0.2f + new Vector3(0, TARGET_HEIGHT, 0);
             targets[targets.Count - 1].transform.localScale = new Vector3(TARGET_SCALE_X, TARGET_SCALE_Y, cornerTargetWidth);
             targets[targets.Count - 1].dist = traveled;
             targets[targets.Count - 1].width = cornerTargetWidth;
