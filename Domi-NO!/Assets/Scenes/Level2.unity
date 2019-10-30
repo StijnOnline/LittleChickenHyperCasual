@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 1
+  m_UseShadowmask: 0
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -635,6 +635,12 @@ MonoBehaviour:
   cam: {fileID: 963194228}
   text: {fileID: 1731808160}
   progressBar: {fileID: 1704335433}
+  leftTouch: {fileID: 0}
+  RightTouch: {fileID: 0}
+  place: {fileID: 8300000, guid: 65dd9cf570869b64f991c88df4ffaae0, type: 3}
+  perfect: {fileID: 8300000, guid: 65dd9cf570869b64f991c88df4ffaae0, type: 3}
+  fall1: {fileID: 8300000, guid: d8ac1147ef905b34a8412f16ac6728e6, type: 3}
+  fall2: {fileID: 8300000, guid: b72b355fad77a104194d6751fe418a96, type: 3}
 --- !u!4 &658209659
 Transform:
   m_ObjectHideFlags: 0

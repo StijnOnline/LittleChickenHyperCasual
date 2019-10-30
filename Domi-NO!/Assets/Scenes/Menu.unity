@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 1
+  m_UseShadowmask: 0
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -386,72 +386,6 @@ RectTransform:
   m_AnchoredPosition: {x: 22, y: 126}
   m_SizeDelta: {x: 600, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &658209657
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 658209659}
-  - component: {fileID: 658209658}
-  m_Layer: 0
-  m_Name: GameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &658209658
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658209657}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26a84a8d29389044d87fbb8e1d7f8cc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  minMaxDist: {x: 0.2, y: 0.4}
-  minWidth: 0.15
-  startSpeed: 0.4
-  speedIncreasePerScore: 0.005
-  cornerTargetWidth: 0.2
-  cornerTargetDist: 0.1
-  camOffset: {x: -2, y: 2, z: -2}
-  camZoom: 6
-  path: {fileID: 0}
-  image: {fileID: 0}
-  dominoPrefab: {fileID: 515565545730855728, guid: 65bfd557d5bf47340a0c5c843a4fa319,
-    type: 3}
-  targetPrefab: {fileID: 6363786667340791311, guid: d321ed7c84f3c2049a7cf2b7700cee72,
-    type: 3}
-  fakeShadow: {fileID: 4259272071370787512, guid: d4739019664da0c4eb7e4c0cb8fb83bf,
-    type: 3}
-  perfectParticlesPrefab: {fileID: 8818213666158538580, guid: 575fb333578979340851762b91e04b33,
-    type: 3}
-  cam: {fileID: 963194228}
-  text: {fileID: 0}
-  progressBar: {fileID: 0}
-  leftTouch: {fileID: 0}
-  RightTouch: {fileID: 0}
---- !u!4 &658209659
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 658209657}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.21640632, y: 0.5434543, z: -0.04324254}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &775301294
 GameObject:
   m_ObjectHideFlags: 0
@@ -541,7 +475,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!1 &868220776
 GameObject:
@@ -607,7 +541,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
@@ -690,7 +624,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 30.000002, y: 45.000004, z: 0}
 --- !u!1 &1539337292
 GameObject:
@@ -861,6 +795,7 @@ GameObject:
   - component: {fileID: 1864702181}
   - component: {fileID: 1864702180}
   - component: {fileID: 1864702183}
+  - component: {fileID: 1864702184}
   m_Layer: 5
   m_Name: Start
   m_TagString: Untagged
@@ -931,13 +866,13 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: 
-        m_Mode: 1
+      - m_Target: {fileID: 1864702184}
+        m_MethodName: LoadSceneByIndex
+        m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -997,6 +932,18 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &1864702184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1864702178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe18ce89476db6a4aacb350c703c0e22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1995263372
 GameObject:
   m_ObjectHideFlags: 0
@@ -1247,7 +1194,7 @@ RectTransform:
   - {fileID: 515946845}
   - {fileID: 1864702179}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}

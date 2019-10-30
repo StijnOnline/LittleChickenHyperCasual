@@ -65,11 +65,19 @@ public class GameManager : MonoBehaviour {
 
     private HitCheck hitCheck;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip place;
+    [SerializeField] private AudioClip perfect;
+    [SerializeField] public AudioClip fall1;
+    [SerializeField] public AudioClip fall2;
+    private AudioSource audioSource;
+
     //TODO: UI button
     //TODO: Audio
     //TODO: BUGS
 
     void Start() {
+        audioSource = gameObject.AddComponent<AudioSource>();
         camScript = cam.GetComponent<Camera>();
 
         dominoPool = new GameObjectPool(dominoPrefab, "dominoPool");
@@ -175,9 +183,11 @@ public class GameManager : MonoBehaviour {
 
                         if(Mathf.Abs(dist - targets[0].dist) < TARGET_PERFECT_RANGE) {
                             text.SetText("Perfect!");
+                            PlayAudio("perfect");
                             Destroy(GameObject.Instantiate(perfectParticlesPrefab, path.Evaluate(dist),targets[0].transform.rotation * Quaternion.Euler(-90,0,0)),1f);
                         } else {
                             text.SetText("Nice!");
+                            PlayAudio("place");
                         }
                     } else {
                         Debug.Log("Wrong at " + dist + " With " + input + ". Target: " + targets[0].dist + ", Width " + targets[0].width + ", Dir " + targets[0].direction, targets[0]);
@@ -203,12 +213,12 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public void PlaceDomino(TouchInput input) {
+    public void PlaceDomino(TouchInput input) {    
+
         Vector3 rotation = Vector3.zero;
         if(input == TouchInput.Both) {
             rotation = targets[0].transform.rotation.eulerAngles;
         } else if(input == TouchInput.Right) { rotation += new Vector3(0, 90, 0); }
-
         
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_SET_HEIGTH, 0);
         currentDomino.rotation = Quaternion.Euler(rotation);
@@ -222,7 +232,6 @@ public class GameManager : MonoBehaviour {
         Color c = mat.GetColor("_BaseColor");
         c.a = DOMINO_TRANSPARANCY;
         mat.SetColor("_BaseColor", c);
-        
 
         NextTarget();
         //    score += 1;
@@ -304,10 +313,14 @@ public class GameManager : MonoBehaviour {
 
         foreach(GameObject obj in dominoes) {
             obj.GetComponent<Rigidbody>().isKinematic = false;
-        }
+            hitCheck = obj.AddComponent<HitCheck>();
+            hitCheck.requiredTag = "Domino";
 
-        hitCheck = dominoes[dominoes.Count - 1].AddComponent<HitCheck>();
-        hitCheck.requiredTag = "Domino";
+            if(obj.transform.localRotation == Quaternion.identity)
+            hitCheck.clip = fall1;
+            else
+            hitCheck.clip = fall2;
+        }        
 
         Vector3 targetPos = path.transform.position + camOffset * 5f;
         Camera camScript = cam.GetComponent<Camera>();
@@ -375,5 +388,12 @@ public class GameManager : MonoBehaviour {
         camScript.orthographicSize = 1;
 
         gameState = GameState.Begin;
+    }
+
+    public void PlayAudio(string name) {
+        switch(name) {
+            case "place": audioSource.PlayOneShot(place); break;
+            case "perfect": audioSource.PlayOneShot(perfect); break;
+        }
     }
 }

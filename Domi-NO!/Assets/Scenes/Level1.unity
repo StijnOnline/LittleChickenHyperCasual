@@ -950,6 +950,10 @@ MonoBehaviour:
   progressBar: {fileID: 1704335433}
   leftTouch: {fileID: 40917042}
   RightTouch: {fileID: 1563493322}
+  place: {fileID: 8300000, guid: 65dd9cf570869b64f991c88df4ffaae0, type: 3}
+  perfect: {fileID: 8300000, guid: 65dd9cf570869b64f991c88df4ffaae0, type: 3}
+  fall1: {fileID: 8300000, guid: d8ac1147ef905b34a8412f16ac6728e6, type: 3}
+  fall2: {fileID: 8300000, guid: b72b355fad77a104194d6751fe418a96, type: 3}
 --- !u!4 &658209659
 Transform:
   m_ObjectHideFlags: 0
