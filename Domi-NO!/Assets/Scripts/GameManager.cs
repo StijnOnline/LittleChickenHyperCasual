@@ -8,15 +8,15 @@ public class GameManager : MonoBehaviour {
 
     private const float INPUT_LENGTH_VALUE = 0.1f;
 
-    private const float TARGET_HEIGHT = 0.27f;
+    private const float TARGET_HEIGHT = 0.126f;
     private const float TARGET_SCALE_X = 0.5f;
     private const float TARGET_SCALE_Y = 0.5f;
     private const float TARGET_PERFECT_RANGE = 0.03f;
     private const float DOMINO_UNSET_HEIGTH = 0.7f;
-    private const float DOMINO_SET_HEIGTH = 0.55f;
+    private const float DOMINO_SET_HEIGTH = 0.43f;
     private const float DOMINO_TRANSPARANCY = 0.3f;
     private const float MINIMUM_PLACE_DIST = 0.1f;
-    private const float FAKE_SHADOW_HEIGTH = 0.26f;
+    private const float FAKE_SHADOW_HEIGTH = 0.127f;
 
     private float dist = 0f;
     private float speed = 0;
@@ -170,7 +170,7 @@ public class GameManager : MonoBehaviour {
         if(gameState == GameState.Playing) {
             progressBar.value = (levelLength - targets.Count) / (float)levelLength;
 
-            
+
             currentDomino.rotation = targets[0].transform.rotation;
             currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
             if(targets[0].direction == TouchInput.Both) { currentDomino.position += currentDomino.right * 0.2f; }
@@ -229,8 +229,11 @@ public class GameManager : MonoBehaviour {
     public void PlaceDomino(TouchInput input) {
 
         Vector3 rotation = Vector3.zero;
+
         if(input == TouchInput.Both) {
-            rotation = targets[0].transform.rotation.eulerAngles;
+            if(targets.Count > 0) {
+                rotation = targets[0].transform.rotation.eulerAngles;
+            }
         } else if(input == TouchInput.Right) { rotation += new Vector3(0, 90, 0); }
 
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_SET_HEIGTH, 0);
@@ -286,7 +289,7 @@ public class GameManager : MonoBehaviour {
             traveled += ToNext.magnitude;
 
             targets.Add(targetPool.GetNext().GetComponent<Target>());
-            
+
             Vector3 rotation = new Vector3(0, -45, 0);
             if(i < nodes.Count - 1) {
                 Vector3 pos1 = nodes[i - 1].position;
@@ -379,7 +382,7 @@ public class GameManager : MonoBehaviour {
 
     public void ForceReset() {
         hitCheck.isHit = true;
-        Invoke("ResetGame", 1f);
+        //Invoke("ResetGame", 1f);
     }
 
     public void ResetGame() {
@@ -420,7 +423,7 @@ public class GameManager : MonoBehaviour {
         cam.position = path.Evaluate(dist) + camOffset;
         camScript.orthographicSize = 1;
 
-        Invoke("BeginState",0.1f);
+        Invoke("BeginState", 0.1f);
     }
 
     public void BeginState() {
