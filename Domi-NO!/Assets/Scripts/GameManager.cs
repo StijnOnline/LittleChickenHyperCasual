@@ -58,12 +58,17 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private GameObject perfectParticlesPrefab;
     [SerializeField] private Transform cam;
 
-    [SerializeField] private TMPro.TextMeshProUGUI text;
+
+    [Header("UI")]
     [SerializeField] private Slider progressBar;
     [SerializeField] private Image leftTouch;
     [SerializeField] private Image RightTouch;
+    [SerializeField] private GameObject loseScreen;
+    [SerializeField] private TMPro.TextMeshProUGUI loseText;
+    [SerializeField] private TMPro.TextMeshProUGUI percentage;
+    [SerializeField] private GameObject playAgain;
 
-    private HitCheck hitCheck;
+
 
     [Header("Audio")]
     [SerializeField] private AudioClip place;
@@ -72,6 +77,9 @@ public class GameManager : MonoBehaviour {
     [SerializeField] public AudioClip fall2;
     private AudioSource audioSource;
 
+
+
+    private HitCheck hitCheck;
     //TODO: UI button
     //TODO: Audio
     //TODO: BUGS
@@ -179,22 +187,20 @@ public class GameManager : MonoBehaviour {
 
                 if(dist < targets[0].dist - targets[0].width / 2) {
                     Debug.Log("Too Early at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
-                    text.SetText("Too Early!");
+                    loseText.SetText("Too Early!");
                     StartCoroutine(EndGame());
                 } else {
                     if(targets[0].direction == input) {
 
                         if(Mathf.Abs(dist - targets[0].dist) < TARGET_PERFECT_RANGE) {
-                            text.SetText("Perfect!");
                             PlayAudio("perfect");
                             Destroy(GameObject.Instantiate(perfectParticlesPrefab, path.Evaluate(dist), targets[0].transform.rotation * Quaternion.Euler(-90, 0, 0)), 1f);
                         } else {
-                            text.SetText("Nice!");
                             PlayAudio("place");
                         }
                     } else {
                         Debug.Log("Wrong at " + dist + " With " + input + ". Target: " + targets[0].dist + ", Width " + targets[0].width + ", Dir " + targets[0].direction, targets[0]);
-                        text.SetText("Wrong!");
+                        loseText.SetText("Wrong Stone!");
                         StartCoroutine(EndGame());
                     }
 
@@ -203,7 +209,7 @@ public class GameManager : MonoBehaviour {
 
             } else if(dist > targets[0].dist + targets[0].width / 2) {
                 Debug.Log("Too late at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
-                text.SetText("Too late!");
+                loseText.SetText("Too Late!");
                 StartCoroutine(EndGame());
             }
 
@@ -311,6 +317,9 @@ public class GameManager : MonoBehaviour {
     public IEnumerator EndGame(bool win = false) {
         gameState = GameState.Ended;
 
+        percentage.SetText(Mathf.RoundToInt((levelLength - targets.Count) / (float)levelLength * 100) + "%");
+        loseScreen.SetActive(true);
+
         //if(score > highScore) {
         //    highScore = score;
         //    PlayerPrefs.SetInt("HighScore", highScore);
@@ -354,13 +363,13 @@ public class GameManager : MonoBehaviour {
             }
         }
         Destroy(hitCheck);
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(2f);
 
         if(win) {
             yield return new WaitForSeconds(image.Reveal() + 5f);
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         } else {
-            ResetGame();
+            playAgain.SetActive(true);
         }
     }
 
@@ -369,7 +378,10 @@ public class GameManager : MonoBehaviour {
         Invoke("ResetGame", 1f);
     }
 
-    private void ResetGame() {
+    public void ResetGame() {
+        loseScreen.SetActive(false);
+        playAgain.SetActive(false);
+
         foreach(GameObject obj in dominoes) {
             obj.GetComponent<Rigidbody>().isKinematic = true;
             obj.transform.rotation = Quaternion.identity;
@@ -404,6 +416,10 @@ public class GameManager : MonoBehaviour {
         cam.position = path.Evaluate(dist) + camOffset;
         camScript.orthographicSize = 1;
 
+        Invoke("BeginState",0.1f);
+    }
+
+    public void BeginState() {
         gameState = GameState.Begin;
     }
 
