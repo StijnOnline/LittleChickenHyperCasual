@@ -370,7 +370,7 @@ public class GameManager : MonoBehaviour {
         mat.SetColor("_BaseColor", c);
 
         foreach(Target t in targets) {
-            dominoPool.Return(t.gameObject);
+            targetPool.Return(t.gameObject);
         }
         targets.Clear();
         SetTargets(); 
