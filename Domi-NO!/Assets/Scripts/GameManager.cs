@@ -430,6 +430,8 @@ public class GameManager : MonoBehaviour {
         speed = startSpeed;
         //scoreText.SetText("" + score);
 
+        progressBar.value = 0;
+
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
         currentDomino.rotation = targets[0].transform.rotation;
 
