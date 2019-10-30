@@ -238,6 +238,10 @@ public class GameManager : MonoBehaviour {
         currentDomino.rotation = Quaternion.Euler(rotation);
         if(input == TouchInput.Both) { currentDomino.position = currentDomino.position + currentDomino.right * 0.2f; }
 
+        if(targets.Count > 1) {
+            NextTarget();
+        }
+
         lastPos = dist;
         if(targets.Count > 1) {
             currentDomino = dominoPool.GetNext().transform;
@@ -248,9 +252,7 @@ public class GameManager : MonoBehaviour {
             c.a = DOMINO_TRANSPARANCY;
             mat.SetColor("_BaseColor", c);
         }
-        if(targets.Count > 1) {
-            NextTarget();
-        } 
+        
         
         if(targets.Count <= 1 && correct) {
             gameState = GameState.Ended;
