@@ -1199,8 +1199,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minMaxDist: {x: 0.2, y: 0.4}
   minWidth: 0.15
-  startSpeed: 0.4
-  speedIncreasePerScore: 0.005
+  startSpeed: 0.6
+  speedIncreaseTotal: 0.3
   cornerTargetWidth: 0.2
   cornerTargetDist: 0.1
   camOffset: {x: -2, y: 2, z: -2}
