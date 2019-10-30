@@ -167,7 +167,7 @@ public class GameManager : MonoBehaviour {
             fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90, 0, 0);
 
             Color target = new Color(1, 1, 1, 0.5f);
-            if(input == TouchInput.Left || input == TouchInput.Both) { leftTouch.color = new Color(1, 1, 1, 0.8f); }            
+            if(input == TouchInput.Left || input == TouchInput.Both) { leftTouch.color = new Color(1, 1, 1, 0.8f); }
             if(input == TouchInput.Right || input == TouchInput.Both) { RightTouch.color = new Color(1, 1, 1, 0.8f); }
             leftTouch.color = Color.Lerp(leftTouch.color, target, 0.1f);
             RightTouch.color = Color.Lerp(RightTouch.color, target, 0.1f);
@@ -184,7 +184,7 @@ public class GameManager : MonoBehaviour {
                         if(Mathf.Abs(dist - targets[0].dist) < TARGET_PERFECT_RANGE) {
                             text.SetText("Perfect!");
                             PlayAudio("perfect");
-                            Destroy(GameObject.Instantiate(perfectParticlesPrefab, path.Evaluate(dist),targets[0].transform.rotation * Quaternion.Euler(-90,0,0)),1f);
+                            Destroy(GameObject.Instantiate(perfectParticlesPrefab, path.Evaluate(dist), targets[0].transform.rotation * Quaternion.Euler(-90, 0, 0)), 1f);
                         } else {
                             text.SetText("Nice!");
                             PlayAudio("place");
@@ -207,19 +207,19 @@ public class GameManager : MonoBehaviour {
             for(int i = Mathf.Max(0, dominoes.Count - 12); i < dominoes.Count; i++) {
                 Material mat = dominoes[i].GetComponent<Renderer>().material;
                 Color c = mat.GetColor("_BaseColor");
-                c.a = Mathf.Min(1, c.a+  0.1f * Time.deltaTime);
+                c.a = Mathf.Min(1, c.a + 0.1f * Time.deltaTime);
                 mat.SetColor("_BaseColor", c);
             }
         }
     }
 
-    public void PlaceDomino(TouchInput input) {    
+    public void PlaceDomino(TouchInput input) {
 
         Vector3 rotation = Vector3.zero;
         if(input == TouchInput.Both) {
             rotation = targets[0].transform.rotation.eulerAngles;
         } else if(input == TouchInput.Right) { rotation += new Vector3(0, 90, 0); }
-        
+
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_SET_HEIGTH, 0);
         currentDomino.rotation = Quaternion.Euler(rotation);
         if(input == TouchInput.Both) { currentDomino.position = currentDomino.position + currentDomino.right * 0.2f; }
@@ -296,20 +296,29 @@ public class GameManager : MonoBehaviour {
     }
 
     public void NextTarget() {
-        targets[0].gameObject.SetActive(false);
-        targetPool.Return(targets[0].gameObject);
-        targets.RemoveAt(0);
-        if(targets.Count > 1)
+        if(targets.Count > 1) {
+            targets[0].gameObject.SetActive(false);
+            targetPool.Return(targets[0].gameObject);
+            targets.RemoveAt(0);
             targets[0].gameObject.SetActive(true);
+        }
     }
 
     public IEnumerator EndGame(bool win = false) {
         gameState = GameState.Ended;
+
         //if(score > highScore) {
         //    highScore = score;
         //    PlayerPrefs.SetInt("HighScore", highScore);
         //    highScoreText.SetText("" + highScore);
         //}
+
+
+        foreach(Target t in targets) {
+            targetPool.Return(t.gameObject);
+        }
+        targets.Clear();
+
 
         foreach(GameObject obj in dominoes) {
             obj.GetComponent<Rigidbody>().isKinematic = false;
@@ -317,10 +326,13 @@ public class GameManager : MonoBehaviour {
             hitCheck.requiredTag = "Domino";
 
             if(obj.transform.localRotation == Quaternion.identity)
-            hitCheck.clip = fall1;
+                hitCheck.clip = fall1;
             else
-            hitCheck.clip = fall2;
-        }        
+                hitCheck.clip = fall2;
+        }
+
+
+
 
         Vector3 targetPos = path.transform.position + camOffset * 5f;
         Camera camScript = cam.GetComponent<Camera>();
@@ -350,7 +362,7 @@ public class GameManager : MonoBehaviour {
 
     public void ForceReset() {
         hitCheck.isHit = true;
-        Invoke("ResetGame",1f);
+        Invoke("ResetGame", 1f);
     }
 
     private void ResetGame() {
@@ -369,11 +381,7 @@ public class GameManager : MonoBehaviour {
         c.a = DOMINO_TRANSPARANCY;
         mat.SetColor("_BaseColor", c);
 
-        foreach(Target t in targets) {
-            targetPool.Return(t.gameObject);
-        }
-        targets.Clear();
-        SetTargets(); 
+        SetTargets();
         levelLength = targets.Count;
 
 
@@ -384,6 +392,11 @@ public class GameManager : MonoBehaviour {
         //scoreText.SetText("" + score);
 
         currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
+        currentDomino.rotation = targets[0].transform.rotation;
+
+        fakeShadow.transform.position = path.Evaluate(dist) + new Vector3(0, FAKE_SHADOW_HEIGTH, 0);
+        fakeShadow.transform.rotation = targets[0].transform.rotation * Quaternion.Euler(90, 0, 0);
+
         cam.position = path.Evaluate(dist) + camOffset;
         camScript.orthographicSize = 1;
 
