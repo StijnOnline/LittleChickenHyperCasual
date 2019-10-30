@@ -182,6 +182,7 @@ public class GameManager : MonoBehaviour {
 
             if(input != TouchInput.None && (dist > lastPos + MINIMUM_PLACE_DIST)) {
 
+                bool correct = false;
                 if(dist < targets[0].dist - targets[0].width / 2) {
                     Debug.Log("Too Early at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
                     loseText.SetText("Too Early!");
@@ -196,6 +197,7 @@ public class GameManager : MonoBehaviour {
                         } else {
                             PlayAudio("place");
                         }
+                        correct = true;
                     } else {
                         Debug.Log("Wrong at " + dist + " With " + input + ". Target: " + targets[0].dist + ", Width " + targets[0].width + ", Dir " + targets[0].direction, targets[0]);
                         loseText.SetText("Wrong Stone!");
@@ -204,7 +206,7 @@ public class GameManager : MonoBehaviour {
                     }
 
                 }
-                PlaceDomino(input);
+                PlaceDomino(input,correct);
 
             } else if(dist > targets[0].dist + targets[0].width / 2) {
                 Debug.Log("Too late at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
@@ -222,7 +224,7 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public void PlaceDomino(TouchInput input) {
+    public void PlaceDomino(TouchInput input,bool correct) {
 
         Vector3 rotation = Vector3.zero;
 
@@ -248,7 +250,9 @@ public class GameManager : MonoBehaviour {
         }
         if(targets.Count > 1) {
             NextTarget();
-        } else {
+        } 
+        
+        if(targets.Count <= 1 && correct) {
             gameState = GameState.Ended;
             StartCoroutine(EndGame(true));
         }
