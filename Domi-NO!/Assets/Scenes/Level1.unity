@@ -1125,9 +1125,9 @@ MonoBehaviour:
   loseText: {fileID: 2108647640}
   percentage: {fileID: 561234681}
   playAgain: {fileID: 1841293295}
-  place: {fileID: 8300000, guid: 65dd9cf570869b64f991c88df4ffaae0, type: 3}
-  perfect: {fileID: 8300000, guid: 701937f17c131ad4a916fed19d3bd484, type: 3}
-  wrong: {fileID: 8300000, guid: e6d5ede610457aa4581ca367defb7f82, type: 3}
+  place: {fileID: 8300000, guid: 21968a23e81986e46ae5d0242c8d0dc4, type: 3}
+  perfect: {fileID: 8300000, guid: ee3ab653db44662449efc21f9d9d547e, type: 3}
+  wrong: {fileID: 8300000, guid: 1d9a9abc46886104ea298702629a81cb, type: 3}
   fall1: {fileID: 8300000, guid: d8ac1147ef905b34a8412f16ac6728e6, type: 3}
   fall2: {fileID: 8300000, guid: b72b355fad77a104194d6751fe418a96, type: 3}
 --- !u!4 &658209659
