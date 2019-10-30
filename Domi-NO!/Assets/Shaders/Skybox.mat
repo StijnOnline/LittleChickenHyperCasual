@@ -84,7 +84,7 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - Color_32712C68: {r: 0.087931626, g: 0.9811321, b: 0.8414136, a: 0}
+    - Color_32712C68: {r: 0.21226418, g: 1, b: 0.8805121, a: 0}
     - Color_D2031C62: {r: 0, g: 0, b: 0, a: 0}
     - Color_E2A9FFDA: {r: 0.014934288, g: 0, b: 0.5754717, a: 0}
     - Color_E3B0CFCF: {r: 0, g: 0, b: 0, a: 0}
