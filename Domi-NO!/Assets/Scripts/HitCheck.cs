@@ -16,8 +16,9 @@ public class HitCheck : MonoBehaviour
     }
 
     public void PlayAudio() {
-        gameObject.AddComponent<AudioSource>().PlayOneShot(clip);        
-        Destroy(gameObject.GetComponent<AudioSource>(), 1f);
+        AudioSource src = gameObject.AddComponent<AudioSource>();
+        src.PlayOneShot(clip);
+        Destroy(src, 0.5f);
         Destroy(this, 1f);
     }
 

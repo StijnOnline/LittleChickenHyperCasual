@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private Vector2 minMaxDist = new Vector2(0.1f, 0.5f);
     [SerializeField] private float minWidth = 0.1f;
     [SerializeField] private float startSpeed = 0.35f;
-    [SerializeField] private float speedIncreasePerScore = 0.005f;
+    [SerializeField] private float speedIncreaseTotal = 0.005f;
     [SerializeField] private float cornerTargetWidth = 0.2f;
     [SerializeField] private float cornerTargetDist = 0.2f;
     [SerializeField] private Vector3 camOffset;
@@ -158,19 +158,15 @@ public class GameManager : MonoBehaviour {
         if(gameState == GameState.Begin && input != TouchInput.None) { gameState = GameState.Playing; }
 
         if(gameState == GameState.Playing) {
-            //speed = startSpeed + score * speedIncreasePerScore;
+            speed = startSpeed + progressBar.value * speedIncreaseTotal;
             dist += Time.deltaTime * speed;
             if(dist < path.getLength()) {
                 cam.position = path.Evaluate(dist) + camOffset;
-            } else {
-                gameState = GameState.Ended;
-                StartCoroutine(EndGame(true));
             }
         }
         if(gameState == GameState.Playing) {
             progressBar.value = (levelLength - targets.Count) / (float)levelLength;
-
-
+            
             currentDomino.rotation = targets[0].transform.rotation;
             currentDomino.position = path.Evaluate(dist) + new Vector3(0, DOMINO_UNSET_HEIGTH, 0);
             if(targets[0].direction == TouchInput.Both) { currentDomino.position += currentDomino.right * 0.2f; }
@@ -241,15 +237,23 @@ public class GameManager : MonoBehaviour {
         if(input == TouchInput.Both) { currentDomino.position = currentDomino.position + currentDomino.right * 0.2f; }
 
         lastPos = dist;
-        currentDomino = dominoPool.GetNext().transform;
-        dominoes.Add(currentDomino.gameObject);
+        if(targets.Count > 1) {
+            currentDomino = dominoPool.GetNext().transform;
+            dominoes.Add(currentDomino.gameObject);
 
-        Material mat = currentDomino.GetComponent<Renderer>().material;
-        Color c = mat.GetColor("_BaseColor");
-        c.a = DOMINO_TRANSPARANCY;
-        mat.SetColor("_BaseColor", c);
+            Material mat = currentDomino.GetComponent<Renderer>().material;
+            Color c = mat.GetColor("_BaseColor");
+            c.a = DOMINO_TRANSPARANCY;
+            mat.SetColor("_BaseColor", c);
+        }
+        if(targets.Count > 1) {
+            NextTarget();
+        } else {
+            gameState = GameState.Ended;
+            StartCoroutine(EndGame(true));
+        }
 
-        NextTarget();
+
         //    score += 1;
         //    scoreText.SetText("" + score);
     }
@@ -288,44 +292,50 @@ public class GameManager : MonoBehaviour {
             }
             traveled += ToNext.magnitude;
 
-            targets.Add(targetPool.GetNext().GetComponent<Target>());
-
-            Vector3 rotation = new Vector3(0, -45, 0);
             if(i < nodes.Count - 1) {
-                Vector3 pos1 = nodes[i - 1].position;
-                Vector3 pos2 = nodes[i].position;
-                Vector3 dir = pos1 - nodes[i + 1].position;
+                targets.Add(targetPool.GetNext().GetComponent<Target>());
 
-                if((dir.x < 0 ^ dir.z > 0)) { rotation += new Vector3(0, 90, 0); }
-                if((dir.x < 0 ^ (pos2 - pos1).x == 0)) { rotation += new Vector3(0, 180, 0); }
+                Vector3 rotation = new Vector3(0, -45, 0);
+                if(i < nodes.Count - 1) {
+                    Vector3 pos1 = nodes[i - 1].position;
+                    Vector3 pos2 = nodes[i].position;
+                    Vector3 dir = pos1 - nodes[i + 1].position;
+
+                    if((dir.x < 0 ^ dir.z > 0)) { rotation += new Vector3(0, 90, 0); }
+                    if((dir.x < 0 ^ (pos2 - pos1).x == 0)) { rotation += new Vector3(0, 180, 0); }
+                }
+                targets[targets.Count - 1].transform.rotation = Quaternion.Euler(rotation);
+                targets[targets.Count - 1].transform.position = nodes[i].position + targets[targets.Count - 1].transform.right * 0.2f + new Vector3(0, TARGET_HEIGHT, 0);
+                targets[targets.Count - 1].transform.localScale = new Vector3(TARGET_SCALE_X, TARGET_SCALE_Y, cornerTargetWidth);
+                targets[targets.Count - 1].dist = traveled;
+                targets[targets.Count - 1].width = cornerTargetWidth;
+                targets[targets.Count - 1].direction = TouchInput.Both;
+                targets[targets.Count - 1].gameObject.SetActive(false);
             }
-            targets[targets.Count - 1].transform.rotation = Quaternion.Euler(rotation);
-            targets[targets.Count - 1].transform.position = nodes[i].position + targets[targets.Count - 1].transform.right * 0.2f + new Vector3(0, TARGET_HEIGHT, 0);
-            targets[targets.Count - 1].transform.localScale = new Vector3(TARGET_SCALE_X, TARGET_SCALE_Y, cornerTargetWidth);
-            targets[targets.Count - 1].dist = traveled;
-            targets[targets.Count - 1].width = cornerTargetWidth;
-            targets[targets.Count - 1].direction = TouchInput.Both;
-
-
-            targets[targets.Count - 1].gameObject.SetActive(false);
         }
         targets[0].gameObject.SetActive(true);
     }
 
     public void NextTarget() {
-        if(targets.Count > 1) {
-            targets[0].gameObject.SetActive(false);
-            targetPool.Return(targets[0].gameObject);
-            targets.RemoveAt(0);
+        targets[0].gameObject.SetActive(false);
+        targetPool.Return(targets[0].gameObject);
+        targets.RemoveAt(0);
+        if(targets.Count > 0)
             targets[0].gameObject.SetActive(true);
-        }
     }
 
     public IEnumerator EndGame(bool win = false) {
         gameState = GameState.Ended;
 
         percentage.SetText(Mathf.RoundToInt((levelLength - targets.Count) / (float)levelLength * 100) + "%");
+        
         loseScreen.SetActive(true);
+
+        if(win) {
+            loseText.SetText("You Win!");
+            percentage.SetText("100%");
+            progressBar.value = 1f;
+        }
 
         //if(score > highScore) {
         //    highScore = score;
@@ -373,7 +383,7 @@ public class GameManager : MonoBehaviour {
         yield return new WaitForSeconds(2f);
 
         if(win) {
-            yield return new WaitForSeconds(image.Reveal() + 5f);
+            yield return new WaitForSeconds(image.Reveal() + 2f);
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         } else {
             playAgain.SetActive(true);
