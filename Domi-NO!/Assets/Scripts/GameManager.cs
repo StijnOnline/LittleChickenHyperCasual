@@ -73,6 +73,7 @@ public class GameManager : MonoBehaviour {
     [Header("Audio")]
     [SerializeField] private AudioClip place;
     [SerializeField] private AudioClip perfect;
+    [SerializeField] private AudioClip wrong;
     [SerializeField] public AudioClip fall1;
     [SerializeField] public AudioClip fall2;
     private AudioSource audioSource;
@@ -188,6 +189,7 @@ public class GameManager : MonoBehaviour {
                 if(dist < targets[0].dist - targets[0].width / 2) {
                     Debug.Log("Too Early at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
                     loseText.SetText("Too Early!");
+                    PlayAudio("wrong");
                     StartCoroutine(EndGame());
                 } else {
                     if(targets[0].direction == input) {
@@ -201,6 +203,7 @@ public class GameManager : MonoBehaviour {
                     } else {
                         Debug.Log("Wrong at " + dist + " With " + input + ". Target: " + targets[0].dist + ", Width " + targets[0].width + ", Dir " + targets[0].direction, targets[0]);
                         loseText.SetText("Wrong Stone!");
+                        PlayAudio("wrong");
                         StartCoroutine(EndGame());
                     }
 
@@ -210,6 +213,7 @@ public class GameManager : MonoBehaviour {
             } else if(dist > targets[0].dist + targets[0].width / 2) {
                 Debug.Log("Too late at " + dist + ". Target: " + targets[0].dist + ", Width " + targets[0].width, targets[0]);
                 loseText.SetText("Too Late!");
+                PlayAudio("wrong");
                 StartCoroutine(EndGame());
             }
 
@@ -427,6 +431,7 @@ public class GameManager : MonoBehaviour {
         switch(name) {
             case "place": audioSource.PlayOneShot(place); break;
             case "perfect": audioSource.PlayOneShot(perfect); break;
+            case "wrong": audioSource.PlayOneShot(wrong); break;
         }
     }
 }
