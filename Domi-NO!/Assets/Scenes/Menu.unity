@@ -999,7 +999,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: TAP TO START
+  m_text: START
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: e074651384a2de1438f07d5af3772c28, type: 2}
   m_sharedMaterial: {fileID: -1309463777741856078, guid: e074651384a2de1438f07d5af3772c28,
@@ -1069,10 +1069,10 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: -1.2698791, w: 0}
   m_textInfo:
     textComponent: {fileID: 1995263374}
-    characterCount: 12
+    characterCount: 5
     spriteCount: 0
-    spaceCount: 2
-    wordCount: 3
+    spaceCount: 0
+    wordCount: 1
     linkCount: 0
     lineCount: 1
     pageCount: 1
